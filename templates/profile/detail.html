@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}User Profile{% endblock %}
+
+{% block content %}
+<p>Name: {{ profile.full_name }}</p>
+<p>Email: {{ user.email }}</p>
+<p>Email confirmed: {{ profile.email_confirmed }}</p>
+<p>School(s): {% for school in profile.schools.all %}{{ school.name }}, {% endfor %}</p>
+<p>Degree(s) Seeking: {% for degree in profile.degrees.all %}{{ degree.name }}, {% endfor %}</p>
+<p>Program: {{ profile.program }}</p>
+<p>Graduation Year: {{ profile.grad_year }}</p>
+{% if profile.resume %}
+<p>Resume: <a href="{% url 'account:download-resume' %}">Download</a></p>
+{% endif %}
+<p>
+  Profile viewable by companies:
+  {% if profile.viewable %}Yes{% else %}No{% endif %}
+</p>
+<p></p>
+<a class="btn btn-primary" href="{% url 'account:edit' %}" role="button">
+  Edit Profile
+</a>
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

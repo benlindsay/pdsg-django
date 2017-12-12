@@ -1,0 +1,5 @@
+__pycache__
+db*
+settings_secret.py
+.idea
+media
