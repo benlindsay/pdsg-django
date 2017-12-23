@@ -1,21 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ event.event_title }}{% endblock %}
+
 You're looking at Event {{ event.id }}.
-<br>
-Event title: {{ event.event_title }}
-<br>
 
-<h1>{{ event.event_title }}</h1>
+{% block content %}
+  {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 
-{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+  {% if just_rsvped %}
+  <p>You successfully RSVP'ed!</p>
+  {% if just_added %}<p>We just added you to the database!</p>{% endif %}
+  <p>Submit another RSVP:</p>
+  {% endif %}
 
-{% if just_rsvped %}
-<p>You successfully RSVP'ed!</p>
-{% if just_added %}<p>We just added you to the database!</p>{% endif %}
-<p>Submit another RSVP:</p>
-{% endif %}
-
-<form action="{% url 'events:rsvp' event.id %}" method="post">
-{% csrf_token %}
-  <p>Email address:</p>
-  <input type="text" name="email" value="" />
-<input type="submit" value="Rsvp" />
-</form>
+  <form action="{% url 'events:rsvp' event.id %}" method="post">
+    {% csrf_token %}
+    <p>Email address:</p>
+    <input type="text" name="email" value="" />
+    <input type="submit" value="Rsvp" />
+  </form>
+{% endblock %}
