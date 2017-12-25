@@ -136,3 +136,8 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+
+# Settings specific to events app
+
+EVENTS_SIGNIN_HOURS_BEFORE = 1
+EVENTS_SIGNIN_HOURS_AFTER = 1

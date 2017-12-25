@@ -13,10 +13,19 @@ You're looking at Event {{ event.id }}.
   <p>Submit another RSVP:</p>
   {% endif %}
 
+  {% if signin_open %}
+  <form action="{% url 'events:signin' event.id %}" method="post">
+    {% csrf_token %}
+    <p>Email address:</p>
+    <input type="text" name="email" value="" />
+    <input type="submit" value="Signin" />
+  </form>
+  {% else %}
   <form action="{% url 'events:rsvp' event.id %}" method="post">
     {% csrf_token %}
     <p>Email address:</p>
     <input type="text" name="email" value="" />
     <input type="submit" value="Rsvp" />
   </form>
+  {% endif %}
 {% endblock %}
