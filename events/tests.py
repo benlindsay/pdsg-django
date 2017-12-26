@@ -1,34 +1,66 @@
-# import datetime
+from datetime import timedelta
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
+from django.test import TestCase
+from django.utils import timezone
 
-# from django.utils import timezone
-# from django.test import TestCase
+from .models import Event
+from .models import Rsvp
+from .models import Signin
 
-# from .models import Event, Rsvp
-# from django.contrib.auth.models import User
 
-# def create_user(email):
-#     u = User(username=email, email=email)
-#     u.save()
-#     return u
+class EventTests(TestCase):
 
-# def create_event(event_title, event_date=None, pub_date=None):
-#     if event_date is None:
-#         event_date = timezone.now() + datetime.timedelta(days=1)
-#     if pub_date is None:
-#         pub_date = timezone.now()
-#     e = Event(
-#         event_title=event_title, event_date=event_date, pub_date=pub_date
-#     )
-#     e.save()
-#     return e
+    def setUp(self):
+        self.event = Event(
+            title='Awesome Event',
+            start_time=timezone.now(),
+            end_time=timezone.now() + timedelta(hours=1),
+            pub_date=timezone.now()
+        )
+        email='test@email.com'
+        self.event.save()
 
-# class RsvpModelTests(TestCase):
+        self.user = User(username=email, email=email)
+        self.user.save()
 
-#     def test_multiple_entries_for_same_user_and_event(self):
-#         """
-#         a duplicate rsvp should alter the original one instead of creating a
-#         new one
-#         """
-#         u = create_user('test@fake.com')
-#         e = create_event('Fake Event')
-#         rsvp_1 = Rsvp(user=u, event=e)
+
+    def test_event_creation_with_end_before_start_fails(self):
+        self.assertRaises(
+            ValidationError,
+            Event(
+                title='Bad Event',
+                start_time=timezone.now(),
+                end_time=timezone.now() - timedelta(minutes=1),
+                pub_date=timezone.now()
+            ).save
+        )
+
+
+    def test_duplicate_rsvp_fails(self):
+        rsvp = Rsvp(event=self.event, user=self.user, rsvp_date=timezone.now())
+        rsvp.save()
+        self.assertRaises(
+            IntegrityError,
+            Rsvp(
+                event=self.event,
+                user=self.user,
+                rsvp_date=timezone.now()
+            ).save
+        )
+
+
+    def test_duplicate_signin_fails(self):
+        signin = Signin(
+            event=self.event, user=self.user, signin_date=timezone.now()
+        )
+        signin.save()
+        self.assertRaises(
+            IntegrityError,
+            Signin(
+                event=self.event,
+                user=self.user,
+                signin_date=timezone.now()
+            ).save
+        )
