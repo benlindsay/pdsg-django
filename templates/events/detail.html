@@ -7,12 +7,6 @@ You're looking at Event {{ event.id }}.
 {% block content %}
   {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 
-  {% if just_rsvped %}
-  <p>You successfully RSVP'ed!</p>
-  {% if just_added %}<p>We just added you to the database!</p>{% endif %}
-  <p>Submit another RSVP:</p>
-  {% endif %}
-
   {% if messages %}
   <ul class="messages">
     {% for message in messages %}
@@ -22,6 +16,7 @@ You're looking at Event {{ event.id }}.
     {% endfor %}
   </ul>
   {% endif %}
+
   {% if signin_open %}
   <form action="{% url 'events:signin' event.id %}" method="post">
     {% csrf_token %}
@@ -34,7 +29,29 @@ You're looking at Event {{ event.id }}.
     {% csrf_token %}
     <p>Email address:</p>
     <input type="text" name="email" value="" />
-    <input type="submit" value="Rsvp" />
+    <input type="submit" value="RSVP" />
   </form>
+  {% endif %}
+
+  {% if request.user.is_authenticated %}
+    {% if signin_open %}
+      {% if signed_in_to_event %}
+  <p>
+    Signed in to this event with {{ request.user.email }}
+  </p>
+  <p>
+    Not you? <a href="{% url 'account:logout' %}">Logout</a>
+  </p>
+      {% endif %}
+    {% else  %}
+      {% if rsvped_to_event %}
+  <p>
+    RSVP'ed to this event with {{ request.user.email }}
+  </p>
+  <p>
+    Not you? <a href="{% url 'account:logout' %}">Logout</a>
+  </p>
+      {% endif %}
+    {% endif %}
   {% endif %}
 {% endblock %}

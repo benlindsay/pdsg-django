@@ -31,7 +31,25 @@ class EventDetailView(generic.DetailView):
     template_name = 'events/detail.html'
 
     def get_context_data(self, **kwargs):
+        # Get default context data
         context = super(EventDetailView, self).get_context_data(**kwargs)
+
+        # Add variables for whether or not current user (if any) has rsvped or
+        # signed in to this event
+        try:
+            s = Signin.objects.get(user=self.request.user, event=context['event'])
+            context['signed_in_to_event'] = True
+        except:
+            context['signed_in_to_event'] = False
+        try:
+            r = Rsvp.objects.get(user=self.request.user, event=context['event'])
+            context['rsvped_to_event'] = True
+        except:
+            context['rsvped_to_event'] = False
+
+        # Add variable for whether the signin period is open for the event
+        # By default the signin period goes from 1 hour before the event to 1
+        # hour after
         signin_start_time = (
             context['event'].start_time -
             timedelta(hours=EVENTS_SIGNIN_HOURS_BEFORE)
@@ -45,7 +63,7 @@ class EventDetailView(generic.DetailView):
             context['signin_open'] = False
         else:
             context['signin_open'] = True
-        context['just_added'] = False
+
         return context
 
 
@@ -81,6 +99,11 @@ def rsvp(request, pk):
         just_added = True
         user = User(username=email, email=email)
         user.save()
+        messages.add_message(
+            request,
+            messages.INFO,
+            'Created a new user profile for {}'.format(email)
+        )
 
     try:
         rsvp = Rsvp.objects.get(user=user, event=event)
