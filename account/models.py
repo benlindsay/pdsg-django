@@ -9,18 +9,12 @@ class School(models.Model):
     def __str__(self):
         return self.abbrev
 
-    # class Meta:
-    #     ordering = ('abbrev',)
-
 
 class Degree(models.Model):
     name = models.CharField(max_length=20)
 
     def __str__(self):
         return self.name
-
-    # class Meta:
-    #     ordering = ('name',)
 
 
 def user_directory_path(instance, filename):
@@ -55,7 +49,10 @@ class Profile(models.Model):
 
     def __str__(self):
         try:
-            return "{}'s profile".format(self.full_name)
+            if self.full_name is not None:
+                return "{}'s profile".format(self.full_name)
+            else:
+                return "{}'s profile".format(self.user.username)
         except:
             return "{}'s profile".format(self.user.username)
 

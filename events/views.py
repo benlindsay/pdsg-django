@@ -1,9 +1,13 @@
+from django.contrib import messages
 from django.contrib.auth.models import User
-from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
+from django.shortcuts import redirect
+from django.shortcuts import render
 from django.urls import reverse
-from django.views import generic
 from django.utils import timezone
+from django.views import generic
+
 from datetime import timedelta
 
 from .models import Event
@@ -29,13 +33,12 @@ class EventDetailView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super(EventDetailView, self).get_context_data(**kwargs)
         signin_start_time = (
-            context['event'].event_date -
+            context['event'].start_time -
             timedelta(hours=EVENTS_SIGNIN_HOURS_BEFORE)
         )
-        event_hours = 1
         signin_end_time = (
-            context['event'].event_date +
-            timedelta(hours=EVENTS_SIGNIN_HOURS_AFTER+event_hours)
+            context['event'].end_time +
+            timedelta(hours=EVENTS_SIGNIN_HOURS_AFTER)
         )
         now = timezone.now()
         if now < signin_start_time or now > signin_end_time:
@@ -66,7 +69,7 @@ def rsvp(request, pk):
     try:
         email = request.POST['email']
     except:
-        return redirect('events:detail', event_id=pk)
+        return redirect('events:detail', pk=pk)
 
     # Get or add user
     try:
@@ -81,22 +84,31 @@ def rsvp(request, pk):
 
     try:
         rsvp = Rsvp.objects.get(user=user, event=event)
-        success = False
+        messages.add_message(
+            request,
+            messages.ERROR,
+            '{} has already been used to RSVP for this event'.format(email)
+        )
     except:
         now = timezone.now()
         rsvp = Rsvp(user=user, event=event, rsvp_date=now)
         rsvp.save()
-        success = True
+        messages.add_message(
+            request,
+            messages.SUCCESS,
+            "You have successfully RSVP'ed with {}".format(email)
+        )
+    return redirect('events:detail', pk=pk)
 
-    context = {'event': event, 'user': user, 'just_added': just_added}
-    if success:
-        return HttpResponseRedirect(
-            reverse('events:rsvp-success', args=(event.pk,))
-        )
-    else:
-        return HttpResponseRedirect(
-            reverse('events:rsvp-failure', args=(event.pk,))
-        )
+    # context = {'event': event, 'user': user, 'just_added': just_added}
+    # if success:
+    #     return HttpResponseRedirect(
+    #         reverse('events:rsvp-success', args=(event.pk,))
+    #     )
+    # else:
+    #     return HttpResponseRedirect(
+    #         reverse('events:rsvp-failure', args=(event.pk,))
+    #     )
 
 
 def signin_success(request, pk):
